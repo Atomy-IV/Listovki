@@ -73,7 +73,24 @@
   </div>
 
   <script>
-    const API_URL = 'https://script.google.com/macros/s/AKfycby8hxqooi9CUjhqjKPDf1D1e32a2c3fXKGjmgrjxDQ-2qfAusHKP0HjRmI5Ss2RP76P/exec'; // Ссылка на ваш Google Apps Script!
+    const API_URL = 'https://script.google.com/macros/s/AKfycbyKNzauZlyjQ9esHBzXNRZxXghrPlLddXfWkulDo5zAx_aXJ89KxF5SWK9L5XtRBJdf/exec'; // Ссылка на ваш Google Apps Script!
+
+    // Функция для получения IP-адреса через бесплатный сервис
+    async function getUserIP() {
+      try {
+        const response = await fetch('https://api.ipify.org?format=json');
+        const data = await response.json();
+        return data.ip;
+      } catch (error) {
+        console.warn('Не удалось получить IP:', error);
+        return 'IP не определен';
+      }
+    }
+
+    // Функция для получения информации о браузере и устройстве
+    function getUserAgent() {
+      return navigator.userAgent;
+    }
 
     async function sendData() {
       const nameInput = document.getElementById('promoterName');
@@ -92,32 +109,32 @@
       document.querySelector('button').disabled = true;
 
       try {
-        // 1. Собираем данные для отправки
+        // 1. Получаем IP-адрес пользователя
+        const userIP = await getUserIP();
+        
+        // 2. Получаем информацию о браузере
+        const userAgent = getUserAgent();
+
+        // 3. Собираем данные для отправки
         const postData = {
-          promoter: name
+          promoter: name,
+          ip: userIP,
+          userAgent: userAgent
         };
 
-        // 2. Отправляем POST-запрос к нашему скрипту
-        const response = await fetch(API_URL, {
+        // 4. Отправляем POST-запрос к нашему скрипту
+        await fetch(API_URL, {
           method: 'POST',
-          mode: 'no-cors', // Важно для работы с Google Apps Script из браузера
+          mode: 'no-cors',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify(postData)
         });
 
-        // Из-за mode: 'no-cors' мы не можем прочитать ответ напрямую,
-        // поэтому мы будем использовать таймаут для уверенности, что данные ушли
-        // и сразу выполним редирект.
-        // Это стандартный подход при работе с Google Apps Script из внешних сайтов.
+        // 5. Перенаправляем пользователя на группу
+        const redirectUrl = 'https://vk.ru/a8_cyber';
         
-        // 3. Перенаправляем пользователя на группу
-        //    Мы используем URL, который указали в скрипте.
-        //    Если нужно редиректить здесь, укажите URL напрямую.
-        const redirectUrl = 'https://vk.ru/a8_cyber'; // Можно указать здесь
-        
-        // Небольшая задержка, чтобы скрипт точно успел обработать запрос
         setTimeout(() => {
           window.location.href = redirectUrl;
         }, 1000);
